@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Game Utilities</string>
+    <string name="button_set_time">Set Time</string>
+    <string name="btnPlusHours">Plus Hours</string>
+    <string name="btnMinusHours" >Minus Hours</string>
+    <string name="txtSetTime">Set Time from Picker</string>
+    <string name="channelName">Game Utilities</string>
+    <string name="channelDescription">Sticky Notification</string>
+    <string name="btnNotify">Test Notification</string>
+    <string name="addAction">Add 3</string>
+    <string name="minusAction">Minus 3</string>
+    <string name="refillAction">Refill</string>
+    <string name="mainNotificationTitle">Candy Crush Friends Saga Utilities</string>
+    <string name="mainNotificationText">Expand and tap [Refill] to refill all lives</string>
+</resources>
