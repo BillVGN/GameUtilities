@@ -1,2 +1,2 @@
 # GameUtilities
-Some functions to "circumvent" certain android games
+Some functions to "circumvent" certain android games. Requires [ROOT].
