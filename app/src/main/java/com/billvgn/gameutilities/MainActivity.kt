@@ -1,14 +1,14 @@
 package com.billvgn.gameutilities
 
-import android.app.AlarmManager
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Icon
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.service.autofill.CharSequenceTransformation
+import android.service.notification.StatusBarNotification
 import android.view.View
 import android.widget.Spinner
 import android.widget.Toast
@@ -35,56 +35,46 @@ class MainActivity : AppCompatActivity() {
 
             // Create an explicit intent for an Activity in your app
             val intent = Intent(this, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
             }
             val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
 
-            createNotificationChannel()
-
-            // Action buttons plus and minus
-//            val plus = Intent(this, SetTimeBroadcastReceiver::class.java).apply {
-//                action = "plus"
-//            }
-//
-//            val minus = Intent(this, SetTimeBroadcastReceiver::class.java).apply {
-//                action = "minus"
-//            }
 
             val refill = Intent(this, SetTimeBroadcastReceiver::class.java).apply {
                 action = "refill"
             }
 
-
             // PendingIntents plus and minus
-//            val plusPendingIntent: PendingIntent = PendingIntent.getBroadcast(this,0, plus,0)
-//            val minusPendingIntent: PendingIntent = PendingIntent.getBroadcast(this,0, minus,0)
             val refillPendingIntent: PendingIntent = PendingIntent.getBroadcast(this,0, refill,0)
 
             val builder = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(getString(R.string.mainNotificationTitle))
                 .setContentText(getString(R.string.mainNotificationText))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setGroup(GROUP_KEY)
                 .setGroupSummary(true)
                 // Set the intent that will fire when the user taps the notification
                 .setContentIntent(pendingIntent)
-//                .addAction(R.drawable.ic_add, getString(R.string.addAction), plusPendingIntent)
-//                .addAction(R.drawable.ic_minus, getString(R.string.minusAction), minusPendingIntent)
                 .addAction(R.drawable.ic_refill, getString(R.string.refillAction), refillPendingIntent)
 
+            val notMan: NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            createNotificationChannel(notMan)
 
             notifyIds.add(Random.nextInt(101))
-            with(NotificationManagerCompat.from(this)) {
-                // notificationId is a unique int for each notification that you must define
-                notify(CHANNEL_ID ,notifyIds.last(), builder.build())
+
+            val sbNotification: Array<out StatusBarNotification> = notMan.activeNotifications
+            if (sbNotification.isEmpty()) {
+                notMan.notify(CHANNEL_ID, notifyIds.last(), builder.build())
+            } else {
+                notMan.notify(CHANNEL_ID, sbNotification[0].id, builder.build())
             }
         } catch (ex: Exception) {
             Toast.makeText(this, ex.localizedMessage, Toast.LENGTH_LONG)
         }
     }
 
-    private fun createNotificationChannel() {
+    private fun createNotificationChannel(notificationManager: NotificationManager) {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -95,8 +85,6 @@ class MainActivity : AppCompatActivity() {
                 description = descriptionText
             }
             // Register the channel with the system
-            val notificationManager: NotificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }

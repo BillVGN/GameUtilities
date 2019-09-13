@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Game Utilities</string>
-    <string name="button_set_time">Set Time</string>
+    <string name="btnSetTime">Set Time</string>
     <string name="btnPlusHours">Plus Hours</string>
     <string name="btnMinusHours" >Minus Hours</string>
     <string name="txtSetTime">Set Time from Picker</string>
