@@ -4,27 +4,24 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Icon
-import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.service.autofill.CharSequenceTransformation
 import android.service.notification.StatusBarNotification
 import android.view.View
 import android.widget.Spinner
+import android.widget.TimePicker
 import android.widget.Toast
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
+import android.text.format.DateFormat.is24HourFormat
 import com.billvgn.gameutilities.com.billvgn.gameutilities.SetTimeBroadcastReceiver
 import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.random.Random
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : Activity(), TimePickerDialog.OnTimeSetListener {
 
     var am: AlarmManager? = null
-    private val CHANNEL_ID: String = "GameUtilities"
-    private val GROUP_KEY = "com.billvgn.gameutilities.NOTIFICATIONS"
+    private val channelId: String = "GameUtilities"
+    private val groupKey = "com.billvgn.gameutilities.NOTIFICATIONS"
     var notifyIds: ArrayList<Int> = ArrayList(0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,30 +31,35 @@ class MainActivity : AppCompatActivity() {
             setContentView(R.layout.activity_main)
 
             // Create an explicit intent for an Activity in your app
-            val intent = Intent(this, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
-            }
-            val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
-
+            val intent = Intent(this, MainActivity::class.java)
+            val pendingIntent: PendingIntent =
+                PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
             val refill = Intent(this, SetTimeBroadcastReceiver::class.java).apply {
                 action = "refill"
             }
 
             // PendingIntents plus and minus
-            val refillPendingIntent: PendingIntent = PendingIntent.getBroadcast(this,0, refill,0)
+            val refillPendingIntent: PendingIntent = PendingIntent.getBroadcast(this, 0, refill, 0)
 
-            val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            val actionBuilder = Notification.Action.Builder(
+                Icon.createWithResource(this, R.drawable.ic_refill),
+                getString(R.string.refillAction),
+                refillPendingIntent
+            )
+
+            val builder = Notification.Builder(this, channelId)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(getString(R.string.mainNotificationTitle))
                 .setContentText(getString(R.string.mainNotificationText))
-                .setGroup(GROUP_KEY)
+                .setGroup(groupKey)
                 .setGroupSummary(true)
                 // Set the intent that will fire when the user taps the notification
                 .setContentIntent(pendingIntent)
-                .addAction(R.drawable.ic_refill, getString(R.string.refillAction), refillPendingIntent)
+                .addAction(actionBuilder.build())
 
-            val notMan: NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notMan: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             createNotificationChannel(notMan)
 
@@ -65,61 +67,73 @@ class MainActivity : AppCompatActivity() {
 
             val sbNotification: Array<out StatusBarNotification> = notMan.activeNotifications
             if (sbNotification.isEmpty()) {
-                notMan.notify(CHANNEL_ID, notifyIds.last(), builder.build())
+                notMan.notify(channelId, notifyIds.last(), builder.build())
             } else {
-                notMan.notify(CHANNEL_ID, sbNotification[0].id, builder.build())
+                notMan.notify(channelId, sbNotification[0].id, builder.build())
             }
         } catch (ex: Exception) {
-            Toast.makeText(this, ex.localizedMessage, Toast.LENGTH_LONG)
+            Toast.makeText(this, ex.localizedMessage, Toast.LENGTH_LONG).show()
         }
     }
 
     private fun createNotificationChannel(notificationManager: NotificationManager) {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = getString(R.string.channelName)
-            val descriptionText = getString(R.string.channelDescription)
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = descriptionText
-            }
-            // Register the channel with the system
-            notificationManager.createNotificationChannel(channel)
+        val name = getString(R.string.channelName)
+        val descriptionText = getString(R.string.channelDescription)
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val channel = NotificationChannel(channelId, name, importance).apply {
+            description = descriptionText
         }
+        // Register the channel with the system
+        notificationManager.createNotificationChannel(channel)
     }
 
     fun notifyBtnClicked(view: View) {
         createNotification(
             "Mais um teste",
             "Teste",
-            PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            }, 0)
+            PendingIntent.getActivity(
+                this,
+                0,
+                Intent(this, MainActivity::class.java),
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
         )
     }
 
     private fun createNotification(content: String, title: String, pIntent: PendingIntent) {
-        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+        val notificationManager: NotificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val builder = Notification.Builder(this, channelId)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentText(content)
             .setContentTitle(title)
-            .setGroup(GROUP_KEY)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setGroup(groupKey)
+            .setGroupSummary(notificationManager.activeNotifications.isEmpty())
             // Set the intent that will fire when the user taps the notification
             .setContentIntent(pIntent)
 
-        var id = 0
+        var id: Int
         do id = Random.nextInt(101) while (notifyIds.contains(id))
         notifyIds.add(id)
-        with(NotificationManagerCompat.from(this)) {
-            // notificationId is a unique int for each notification that you must define
-            notify(CHANNEL_ID ,id, builder.build())
-        }
+        notificationManager.notify(channelId, id, builder.build())
     }
 
     fun showTimePickerDialog(view: View) {
-        TimePickerFragment(this).show(this.supportFragmentManager, "timePicker")
+        val cal = Calendar.getInstance()
+        TimePickerDialog(
+            this,
+            this,
+            cal.get(Calendar.HOUR_OF_DAY),
+            cal.get(Calendar.MINUTE),
+            is24HourFormat(this)
+        )
+    }
+
+    override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.HOUR_OF_DAY, hourOfDay)
+        cal.set(Calendar.MINUTE, minute)
+        setTime(cal.timeInMillis)
     }
 
     fun setTime(timeInMillis: Long) {
