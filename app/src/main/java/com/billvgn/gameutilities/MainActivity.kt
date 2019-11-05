@@ -6,12 +6,13 @@ import android.content.Intent
 import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.service.notification.StatusBarNotification
+import android.text.format.DateFormat
 import android.view.View
 import android.widget.Spinner
 import android.widget.TimePicker
 import android.widget.Toast
 import android.text.format.DateFormat.is24HourFormat
-import com.billvgn.gameutilities.com.billvgn.gameutilities.SetTimeBroadcastReceiver
+import java.io.DataOutputStream
 import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
@@ -126,34 +127,42 @@ class MainActivity : Activity(), TimePickerDialog.OnTimeSetListener {
             cal.get(Calendar.HOUR_OF_DAY),
             cal.get(Calendar.MINUTE),
             is24HourFormat(this)
-        )
+        ).show()
     }
 
     override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
         val cal = Calendar.getInstance()
         cal.set(Calendar.HOUR_OF_DAY, hourOfDay)
         cal.set(Calendar.MINUTE, minute)
-        setTime(cal.timeInMillis)
+        setTime(cal)
     }
 
-    fun setTime(timeInMillis: Long) {
-        if (am !is AlarmManager) am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        am?.setTime(timeInMillis)
+    private fun getDateString(calendar: Calendar):CharSequence {
+        return DateFormat.format("MMddHHmm", calendar)
+    }
+
+    private fun setTime(calendar: Calendar) {
+        val command = "date " + getDateString(calendar) + "\n"
+        val su = Runtime.getRuntime().exec("su")
+        val dos = DataOutputStream(su.outputStream)
+        dos.writeBytes(command)
+        dos.writeBytes("exit\n")
+        dos.flush()
+        dos.close()
+        su.waitFor()
     }
 
     fun addHours(view: View) {
         val cal = Calendar.getInstance()
         val spinHours = findViewById<Spinner>(R.id.spnHours).selectedItem.toString().toInt()
         cal.add(Calendar.HOUR_OF_DAY, spinHours)
-        if (am !is AlarmManager) am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        am?.setTime(cal.timeInMillis)
+        setTime(cal)
     }
 
     fun subtractHours(view: View) {
         val cal = Calendar.getInstance()
         val spinHours = findViewById<Spinner>(R.id.spnHours).selectedItem.toString().toInt()
         cal.add(Calendar.HOUR_OF_DAY, -spinHours)
-        if (am !is AlarmManager) am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        am?.setTime(cal.timeInMillis)
+        setTime(cal)
     }
 }

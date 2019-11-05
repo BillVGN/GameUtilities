@@ -1,40 +1,48 @@
-package com.billvgn.gameutilities.com.billvgn.gameutilities
+package com.billvgn.gameutilities
 
-import android.app.AlarmManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.text.format.DateFormat
+import java.io.DataOutputStream
 import java.util.*
-import kotlin.concurrent.timer
 
 class SetTimeBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         when(intent.action) {
-            "plus"  -> addHours(context)
-            "minus" -> subtractHours(context)
-            "refill" -> jumpThree(context)
+            "plus"  -> addHours()
+            "minus" -> subtractHours()
+            "refill" -> jumpThree()
         }
     }
 
-    fun addHours(context: Context) {
+    private fun addHours() {
         val cal = Calendar.getInstance()
         cal.add(Calendar.HOUR_OF_DAY, 3)
-        val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        am.setTime(cal.timeInMillis)
+        setTime(cal)
     }
 
-    fun subtractHours(context: Context) {
+    private fun subtractHours() {
         val cal = Calendar.getInstance()
         cal.add(Calendar.HOUR_OF_DAY, -3)
-        val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        am.setTime(cal.timeInMillis)
+        setTime(cal)
     }
 
-    fun jumpThree(context: Context) {
-        addHours(context)
-        Thread.sleep(1000)
-        subtractHours(context)
+    private fun jumpThree() {
+        addHours()
+        Thread.sleep(2000)
+        subtractHours()
     }
 
+    private fun setTime(calendar: Calendar) {
+        val command = "date " + DateFormat.format("MMddHHmm", calendar) + "\n"
+        val su = Runtime.getRuntime().exec("su")
+        val dos = DataOutputStream(su.outputStream)
+        dos.writeBytes(command)
+        dos.writeBytes("exit\n")
+        dos.flush()
+        dos.close()
+        su.waitFor()
+    }
 }
