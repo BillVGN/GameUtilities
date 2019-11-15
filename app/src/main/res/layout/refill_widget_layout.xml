@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="end|top"
+    android:id="@+id/layout"
+    android:background="@android:color/transparent"
+    >
+
+    <ImageButton
+        android:id="@+id/icone"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="Refill Service Overlay Button"
+        android:src="@mipmap/ic_game_utilities"
+        android:tag="icone" />
+
+    <ImageButton
+        android:id="@+id/close"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignEnd="@+id/icone"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_close_button"
+        android:tag="close" />
+</RelativeLayout>

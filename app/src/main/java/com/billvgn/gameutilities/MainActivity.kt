@@ -1,18 +1,19 @@
 package com.billvgn.gameutilities
 
 import android.app.*
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Icon
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.service.notification.StatusBarNotification
-import android.text.format.DateFormat
 import android.view.View
 import android.widget.Spinner
 import android.widget.TimePicker
 import android.widget.Toast
 import android.text.format.DateFormat.is24HourFormat
-import java.io.DataOutputStream
 import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
@@ -20,10 +21,11 @@ import kotlin.random.Random
 
 class MainActivity : Activity(), TimePickerDialog.OnTimeSetListener {
 
-    var am: AlarmManager? = null
     private val channelId: String = "GameUtilities"
     private val groupKey = "com.billvgn.gameutilities.NOTIFICATIONS"
+    private val ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE = 5469
     var notifyIds: ArrayList<Int> = ArrayList(0)
+    var overlayPermissionGranted = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         try {
@@ -75,6 +77,35 @@ class MainActivity : Activity(), TimePickerDialog.OnTimeSetListener {
         } catch (ex: Exception) {
             Toast.makeText(this, ex.localizedMessage, Toast.LENGTH_LONG).show()
         }
+
+//        val svc = Intent(this, OverlayRefillService::class.java)
+//        if (overlayPermissionGranted) {
+//            startService(svc)
+//        } else {
+//            askForOverlayPermission()
+//            if (overlayPermissionGranted) {
+//                startService(svc)
+//            }
+//        }
+    }
+
+    private fun askForOverlayPermission() {
+        if (!Settings.canDrawOverlays(this)) {
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:$packageName"))
+            startActivityForResult(intent, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE)
+        } else {
+            overlayPermissionGranted = true
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+        if (requestCode == ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                overlayPermissionGranted = true
+            }
+        }
     }
 
     private fun createNotificationChannel(notificationManager: NotificationManager) {
@@ -88,38 +119,7 @@ class MainActivity : Activity(), TimePickerDialog.OnTimeSetListener {
         notificationManager.createNotificationChannel(channel)
     }
 
-    fun notifyBtnClicked(view: View) {
-        createNotification(
-            "Mais um teste",
-            "Teste",
-            PendingIntent.getActivity(
-                this,
-                0,
-                Intent(this, MainActivity::class.java),
-                PendingIntent.FLAG_UPDATE_CURRENT
-            )
-        )
-    }
-
-    private fun createNotification(content: String, title: String, pIntent: PendingIntent) {
-        val notificationManager: NotificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val builder = Notification.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_notification)
-            .setContentText(content)
-            .setContentTitle(title)
-            .setGroup(groupKey)
-            .setGroupSummary(notificationManager.activeNotifications.isEmpty())
-            // Set the intent that will fire when the user taps the notification
-            .setContentIntent(pIntent)
-
-        var id: Int
-        do id = Random.nextInt(101) while (notifyIds.contains(id))
-        notifyIds.add(id)
-        notificationManager.notify(channelId, id, builder.build())
-    }
-
-    fun showTimePickerDialog(view: View) {
+    fun showTimePickerDialog(@Suppress("UNUSED_PARAMETER") view: View) {
         val cal = Calendar.getInstance()
         TimePickerDialog(
             this,
@@ -134,35 +134,20 @@ class MainActivity : Activity(), TimePickerDialog.OnTimeSetListener {
         val cal = Calendar.getInstance()
         cal.set(Calendar.HOUR_OF_DAY, hourOfDay)
         cal.set(Calendar.MINUTE, minute)
-        setTime(cal)
+        TimeChanger().setTime(cal)
     }
 
-    private fun getDateString(calendar: Calendar):CharSequence {
-        return DateFormat.format("MMddHHmm", calendar)
-    }
-
-    private fun setTime(calendar: Calendar) {
-        val command = "date " + getDateString(calendar) + "\n"
-        val su = Runtime.getRuntime().exec("su")
-        val dos = DataOutputStream(su.outputStream)
-        dos.writeBytes(command)
-        dos.writeBytes("exit\n")
-        dos.flush()
-        dos.close()
-        su.waitFor()
-    }
-
-    fun addHours(view: View) {
+    fun addHours(@Suppress("UNUSED_PARAMETER") view: View) {
         val cal = Calendar.getInstance()
         val spinHours = findViewById<Spinner>(R.id.spnHours).selectedItem.toString().toInt()
         cal.add(Calendar.HOUR_OF_DAY, spinHours)
-        setTime(cal)
+        TimeChanger().setTime(cal)
     }
 
-    fun subtractHours(view: View) {
+    fun subtractHours(@Suppress("UNUSED_PARAMETER") view: View) {
         val cal = Calendar.getInstance()
         val spinHours = findViewById<Spinner>(R.id.spnHours).selectedItem.toString().toInt()
         cal.add(Calendar.HOUR_OF_DAY, -spinHours)
-        setTime(cal)
+        TimeChanger().setTime(cal)
     }
 }

@@ -2,13 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.billvgn.gameutilities">
 
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_game_utilities"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_game_utilities_round"
+        android:roundIcon="@mipmap/ic_game_utilities"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".StartServiceActivity">
+
+        </activity>
+
         <receiver android:name=".CCFSLauncherWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -22,8 +28,22 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="www.gameutilities.net"
+                    android:scheme="http" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
 
         <receiver android:name=".SetTimeBroadcastReceiver">
@@ -33,8 +53,11 @@
                 <action android:name="refill" />
             </intent-filter>
         </receiver>
-
         <receiver android:name=".ExecuteGameBroadcastReceiver" />
+
+        <service
+            android:name=".OverlayRefillService"
+            android:exported="false" />
     </application>
 
 </manifest>
