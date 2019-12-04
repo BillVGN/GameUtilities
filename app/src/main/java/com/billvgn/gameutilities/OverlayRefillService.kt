@@ -27,6 +27,7 @@ import androidx.core.view.ViewCompat.animate
 import android.R.attr.x
 import android.R.attr.y
 import android.R.attr.start
+import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat.getSystemService
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.widget.RelativeLayout
@@ -38,7 +39,7 @@ import androidx.core.content.ContextCompat.getSystemService
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 
 
-class OverlayRefillService : Service(), View.OnTouchListener, View.OnClickListener, View.OnLongClickListener {
+class OverlayRefillService : Service(), View.OnTouchListener, View.OnClickListener /*, View.OnLongClickListener*/{
 
     private var topLeftView: View? = null
 
@@ -60,7 +61,7 @@ class OverlayRefillService : Service(), View.OnTouchListener, View.OnClickListen
         overlayedButton?.background = getDrawable(R.drawable.round_shape)
         overlayedButton?.setOnTouchListener(this)
         overlayedButton?.setOnClickListener(this)
-        overlayedButton?.setOnLongClickListener(this)
+//        overlayedButton?.setOnLongClickListener(this)
         overlayedButton?.tag = "icone"
 
         val params = LayoutParams(
@@ -84,12 +85,20 @@ class OverlayRefillService : Service(), View.OnTouchListener, View.OnClickListen
             LayoutParams.FLAG_NOT_FOCUSABLE or LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSPARENT
         )
+        /* Context Menu */
+        topLeftView!!.setOnCreateContextMenuListener { menu, _, _ ->
+            val inflater = MenuInflater(this)
+            inflater.inflate(R.menu.overlay_context_menu, menu)
+        }
+
         topLeftParams.gravity = Gravity.LEFT or Gravity.TOP
         topLeftParams.x = 0
         topLeftParams.y = 0
         topLeftParams.width = 0
         topLeftParams.height = 0
+
         wm?.addView(topLeftView, topLeftParams)
+
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -147,20 +156,25 @@ class OverlayRefillService : Service(), View.OnTouchListener, View.OnClickListen
         TimeChanger().thereAndBackAgain(3)
     }
 
-    override fun onLongClick(v: View): Boolean {
-        if (!moving) {
-            this.stopSelf()
-        }
-        return true
-    }
+//    override fun onLongClick(v: View): Boolean {
+//        if (!moving) {
+//            this.stopSelf()
+//        }
+//        return true
+//    }
 
     override fun onDestroy() {
         super.onDestroy()
         if (overlayedButton != null) {
-            wm?.removeView(overlayedButton)
-            wm?.removeView(topLeftView)
-            overlayedButton = null
-            topLeftView = null
+            clearOverlay()
         }
     }
+
+    private fun clearOverlay() {
+        wm?.removeView(overlayedButton)
+        wm?.removeView(topLeftView)
+        overlayedButton = null
+        topLeftView = null
+    }
+
 }

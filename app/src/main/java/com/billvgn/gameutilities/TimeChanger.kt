@@ -5,13 +5,13 @@ import java.io.DataOutputStream
 import java.util.*
 
 class TimeChanger {
-    private fun addHours(amount: Int) {
+    fun addHours(amount: Int) {
         val cal = Calendar.getInstance()
         cal.add(Calendar.HOUR_OF_DAY, amount)
         setTime(cal)
     }
 
-    private fun subtractHours(amount: Int) {
+    fun subtractHours(amount: Int) {
         val cal = Calendar.getInstance()
         cal.add(Calendar.HOUR_OF_DAY, -amount)
         setTime(cal)

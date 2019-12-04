@@ -6,25 +6,30 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
+import android.view.View
 import java.lang.Math.*
+import java.sql.Time
 
 class StartServiceActivity : Activity() {
 
     private var overlayPermissionGranted: Boolean = false
     private val rc = random().toInt()
+    private var serviceIntent: Intent? = null
+    private var tc: TimeChanger? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val intent = Intent(this, OverlayRefillService::class.java)
+        serviceIntent = Intent(this, OverlayRefillService::class.java)
         if (!overlayPermissionGranted) {
             askForOverlayPermission()
             if (overlayPermissionGranted) {
-                startService(intent)
+                startService(serviceIntent)
             }
         } else {
-            startService(intent)
+            startService(serviceIntent)
         }
+        tc = TimeChanger()
         finish()
     }
 
@@ -45,5 +50,21 @@ class StartServiceActivity : Activity() {
                 overlayPermissionGranted = true
             }
         }
+    }
+
+    fun btnClose(v: View) {
+        stopService(serviceIntent)
+    }
+
+    fun btnRefill(v: View) {
+        tc?.thereAndBackAgain(3) // usar valor global quando config for implementada
+    }
+
+    fun btnAdd(v: View) {
+        tc?.addHours(3) // usar valor global quando config for implementada
+    }
+
+    fun btnMinus(v: View) {
+        tc?.subtractHours(3) // usar valor global quando config for implementada
     }
 }

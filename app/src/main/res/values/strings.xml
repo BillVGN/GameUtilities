@@ -18,4 +18,9 @@
     <string name="shortcutShort">Serviço</string>
     <string name="shortcutLong">Atalho do Serviço Game Utilities</string>
     <string name="shortcutDisabled">Atalho Desabilitado</string>
+    <string name="refill_menu_button">Refill</string>
+    <string name="add_menu_button">Add Time</string>
+    <string name="minus_menu_button">Remove Time</string>
+    <string name="settings">Settings</string>
+    <string name="close">Close</string>
 </resources>
