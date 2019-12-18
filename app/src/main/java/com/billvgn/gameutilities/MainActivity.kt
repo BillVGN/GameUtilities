@@ -1,7 +1,6 @@
 package com.billvgn.gameutilities
 
 import android.app.*
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Icon
@@ -10,10 +9,8 @@ import android.os.Bundle
 import android.provider.Settings
 import android.service.notification.StatusBarNotification
 import android.view.View
-import android.widget.Spinner
 import android.widget.TimePicker
 import android.widget.Toast
-import android.text.format.DateFormat.is24HourFormat
 import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
@@ -119,35 +116,10 @@ class MainActivity : Activity(), TimePickerDialog.OnTimeSetListener {
         notificationManager.createNotificationChannel(channel)
     }
 
-    fun showTimePickerDialog(@Suppress("UNUSED_PARAMETER") view: View) {
-        val cal = Calendar.getInstance()
-        TimePickerDialog(
-            this,
-            this,
-            cal.get(Calendar.HOUR_OF_DAY),
-            cal.get(Calendar.MINUTE),
-            is24HourFormat(this)
-        ).show()
-    }
-
     override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
         val cal = Calendar.getInstance()
         cal.set(Calendar.HOUR_OF_DAY, hourOfDay)
         cal.set(Calendar.MINUTE, minute)
-        TimeChanger().setTime(cal)
-    }
-
-    fun addHours(@Suppress("UNUSED_PARAMETER") view: View) {
-        val cal = Calendar.getInstance()
-        val spinHours = findViewById<Spinner>(R.id.spnHours).selectedItem.toString().toInt()
-        cal.add(Calendar.HOUR_OF_DAY, spinHours)
-        TimeChanger().setTime(cal)
-    }
-
-    fun subtractHours(@Suppress("UNUSED_PARAMETER") view: View) {
-        val cal = Calendar.getInstance()
-        val spinHours = findViewById<Spinner>(R.id.spnHours).selectedItem.toString().toInt()
-        cal.add(Calendar.HOUR_OF_DAY, -spinHours)
         TimeChanger().setTime(cal)
     }
 }

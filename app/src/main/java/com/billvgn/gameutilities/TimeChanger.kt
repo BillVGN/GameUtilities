@@ -24,7 +24,7 @@ class TimeChanger {
     }
 
     fun setTime(calendar: Calendar) {
-        val command = "date " + DateFormat.format("MMddHHmm", calendar) + "\n"
+        val command = "date " + DateFormat.format("MMddHHmmyyyy.ss", calendar) + "\n"
         val su = Runtime.getRuntime().exec("su")
         val dos = DataOutputStream(su.outputStream)
         dos.writeBytes(command)

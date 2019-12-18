@@ -4,21 +4,17 @@
     <item
         android:id="@+id/btnRefill"
         android:checkable="false"
-        android:onClick="btnRefill"
         android:title="@string/refill_menu_button"></item>
     <item
         android:id="@+id/btnAdd"
-        android:onClick="btnAdd"
         android:title="@string/add_menu_button" />
     <item
         android:id="@+id/btnMinus"
-        android:onClick="btnMinus"
         android:title="@string/minus_menu_button" />
     <item
         android:id="@+id/btnSettings"
         android:title="@string/settings" />
     <item
         android:id="@+id/btnClose"
-        android:onClick="btnClose"
         android:title="@string/close" />
 </menu>

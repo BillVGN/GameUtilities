@@ -11,9 +11,8 @@
         android:roundIcon="@mipmap/ic_game_utilities"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".StartServiceActivity">
-
-        </activity>
+        <activity android:name=".OverlayActivity"></activity>
+        <activity android:name=".StartServiceActivity"></activity>
 
         <receiver android:name=".CCFSLauncherWidget">
             <intent-filter>
@@ -41,6 +40,7 @@
                     android:host="www.gameutilities.net"
                     android:scheme="http" />
             </intent-filter>
+
             <meta-data
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />

@@ -51,20 +51,4 @@ class StartServiceActivity : Activity() {
             }
         }
     }
-
-    fun btnClose(v: View) {
-        stopService(serviceIntent)
-    }
-
-    fun btnRefill(v: View) {
-        tc?.thereAndBackAgain(3) // usar valor global quando config for implementada
-    }
-
-    fun btnAdd(v: View) {
-        tc?.addHours(3) // usar valor global quando config for implementada
-    }
-
-    fun btnMinus(v: View) {
-        tc?.subtractHours(3) // usar valor global quando config for implementada
-    }
 }

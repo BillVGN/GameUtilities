@@ -3,11 +3,7 @@ package com.billvgn.gameutilities
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.PixelFormat
-import android.graphics.drawable.Icon
-import android.media.Image
-import android.net.Uri
 import android.os.IBinder
 import android.view.WindowManager.LayoutParams
 import android.view.*
@@ -15,31 +11,10 @@ import android.view.Gravity
 import android.view.WindowManager
 import android.view.MotionEvent
 import android.widget.ImageButton
-import java.io.File
+import android.widget.PopupMenu
 import kotlin.math.abs
-import android.R.attr.y
-import android.R.attr.x
-import android.opengl.ETC1.getHeight
-import android.opengl.ETC1.getWidth
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import androidx.core.view.ViewCompat.animate
-import android.R.attr.x
-import android.R.attr.y
-import android.R.attr.start
-import android.graphics.drawable.Drawable
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import android.widget.RelativeLayout
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 
-
-class OverlayRefillService : Service(), View.OnTouchListener, View.OnClickListener /*, View.OnLongClickListener*/{
+class OverlayRefillService : Service(), View.OnTouchListener, View.OnClickListener , View.OnLongClickListener, MenuItem.OnMenuItemClickListener{
 
     private var topLeftView: View? = null
 
@@ -50,6 +25,7 @@ class OverlayRefillService : Service(), View.OnTouchListener, View.OnClickListen
     private var originalYPos: Int = 0
     private var moving: Boolean = false
     private var wm: WindowManager? = null
+    private var popupMenu: PopupMenu? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -61,7 +37,7 @@ class OverlayRefillService : Service(), View.OnTouchListener, View.OnClickListen
         overlayedButton?.background = getDrawable(R.drawable.round_shape)
         overlayedButton?.setOnTouchListener(this)
         overlayedButton?.setOnClickListener(this)
-//        overlayedButton?.setOnLongClickListener(this)
+        overlayedButton?.setOnLongClickListener(this)
         overlayedButton?.tag = "icone"
 
         val params = LayoutParams(
@@ -74,6 +50,11 @@ class OverlayRefillService : Service(), View.OnTouchListener, View.OnClickListen
         params.gravity = Gravity.LEFT or Gravity.TOP
         params.x = 0
         params.y = 0
+
+        popupMenu = PopupMenu(this, overlayedButton)
+        popupMenu?.menuInflater?.inflate(R.menu.overlay_context_menu, popupMenu?.menu)
+        registerMenuItemClickListeners()
+
         wm?.addView(overlayedButton, params)
 
 
@@ -85,12 +66,6 @@ class OverlayRefillService : Service(), View.OnTouchListener, View.OnClickListen
             LayoutParams.FLAG_NOT_FOCUSABLE or LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSPARENT
         )
-        /* Context Menu */
-        topLeftView!!.setOnCreateContextMenuListener { menu, _, _ ->
-            val inflater = MenuInflater(this)
-            inflater.inflate(R.menu.overlay_context_menu, menu)
-        }
-
         topLeftParams.gravity = Gravity.LEFT or Gravity.TOP
         topLeftParams.x = 0
         topLeftParams.y = 0
@@ -153,15 +128,15 @@ class OverlayRefillService : Service(), View.OnTouchListener, View.OnClickListen
     }
 
     override fun onClick(v: View) {
-        TimeChanger().thereAndBackAgain(3)
+        popupMenu?.show()
     }
 
-//    override fun onLongClick(v: View): Boolean {
-//        if (!moving) {
-//            this.stopSelf()
-//        }
-//        return true
-//    }
+    override fun onLongClick(v: View): Boolean {
+        if (!moving) {
+            TimeChanger().thereAndBackAgain(3)
+        }
+        return true
+    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -177,4 +152,21 @@ class OverlayRefillService : Service(), View.OnTouchListener, View.OnClickListen
         topLeftView = null
     }
 
+    private fun registerMenuItemClickListeners() {
+        for (i in 0 until popupMenu?.menu!!.size()) {
+            popupMenu?.menu!!.getItem(i).setOnMenuItemClickListener(this)
+        }
+
+    }
+
+    override fun onMenuItemClick(item: MenuItem?): Boolean {
+        when (item?.title) {
+            getString(R.string.refill_menu_button) -> { TimeChanger().thereAndBackAgain(3) }
+            getString(R.string.add_menu_button) -> { TimeChanger().addHours(3) }
+            getString(R.string.minus_menu_button) -> { TimeChanger().subtractHours(3) }
+            getString(R.string.settings) -> { }
+            getString(R.string.close) -> { stopSelf() }
+        }
+        return true
+    }
 }
