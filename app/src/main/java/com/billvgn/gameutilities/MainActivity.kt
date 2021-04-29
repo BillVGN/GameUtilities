@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.service.notification.StatusBarNotification
-import android.view.View
 import android.widget.TimePicker
 import android.widget.Toast
 import java.lang.Exception
